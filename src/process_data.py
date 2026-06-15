@@ -8,26 +8,57 @@ DATA_PATH = Path("data/observations.csv")
 def load_observations():
     df = pd.read_csv(DATA_PATH)
 
-    # Convert time columns into datetime values.
+    required_columns = [
+        "id",
+        "satellite",
+        "station",
+        "start",
+        "end",
+        "status",
+        "transmitter",
+        "archive",
+        "waterfall",
+    ]
+
+    for column in required_columns:
+        if column not in df.columns:
+            df[column] = None
+
     df["start"] = pd.to_datetime(df["start"], errors="coerce")
     df["end"] = pd.to_datetime(df["end"], errors="coerce")
 
-    # Calculate duration in minutes.
     df["duration_minutes"] = (
         df["end"] - df["start"]
     ).dt.total_seconds() / 60
 
-    # Clean status text.
+    df["duration_minutes"] = df["duration_minutes"].fillna(0)
+
     df["status_text"] = df["status"].astype(str).str.lower()
 
-    # Remove future scheduled observations because they have not happened yet.
     df = df[df["status_text"] != "future"].copy()
+
+    df["satellite"] = df["satellite"].fillna("Unknown Satellite").astype(str)
+    df["station"] = df["station"].fillna("Unknown Station").astype(str)
 
     def classify_success(status):
         status = str(status).lower()
 
-        success_words = ["good", "success", "successful", "completed", "approved"]
-        failure_words = ["bad", "failed", "failure", "unknown", "rejected", "future"]
+        success_words = [
+            "good",
+            "success",
+            "successful",
+            "completed",
+            "approved",
+        ]
+
+        failure_words = [
+            "bad",
+            "failed",
+            "failure",
+            "unknown",
+            "rejected",
+            "future",
+        ]
 
         if any(word in status for word in success_words):
             return 1
@@ -39,7 +70,6 @@ def load_observations():
 
     df["is_success"] = df["status_text"].apply(classify_success)
 
-    # Create date column for daily charts.
     df["date"] = df["start"].dt.date
 
     return df
@@ -50,11 +80,12 @@ def calculate_summary(df):
 
     if total_observations == 0:
         success_rate = 0
+        unique_satellites = 0
+        unique_stations = 0
     else:
         success_rate = df["is_success"].mean() * 100
-
-    unique_satellites = df["satellite"].nunique()
-    unique_stations = df["station"].nunique()
+        unique_satellites = df["satellite"].nunique()
+        unique_stations = df["station"].nunique()
 
     summary = {
         "total_observations": total_observations,
@@ -66,9 +97,23 @@ def calculate_summary(df):
     return summary
 
 
+def empty_reliability_table(group_column):
+    return pd.DataFrame(
+        columns=[
+            group_column,
+            "observations",
+            "success_rate",
+            "avg_duration",
+        ]
+    )
+
+
 def satellite_reliability(df):
+    if df.empty or "satellite" not in df.columns:
+        return empty_reliability_table("satellite")
+
     result = (
-        df.groupby("satellite")
+        df.groupby("satellite", dropna=False)
         .agg(
             observations=("id", "count"),
             success_rate=("is_success", "mean"),
@@ -84,8 +129,11 @@ def satellite_reliability(df):
 
 
 def station_reliability(df):
+    if df.empty or "station" not in df.columns:
+        return empty_reliability_table("station")
+
     result = (
-        df.groupby("station")
+        df.groupby("station", dropna=False)
         .agg(
             observations=("id", "count"),
             success_rate=("is_success", "mean"),
@@ -103,18 +151,19 @@ def station_reliability(df):
 def add_health_score(satellite_df):
     df = satellite_df.copy()
 
+    if df.empty:
+        df["health_score"] = []
+        return df
+
     def calculate_score(row):
         score = row["success_rate"]
 
-        # If there are very few observations, confidence is lower.
         if row["observations"] < 5:
             score -= 20
 
-        # Very short observations may be less useful.
         if row["avg_duration"] < 2:
             score -= 10
 
-        # Keep score between 0 and 100.
         score = max(0, min(100, score))
 
         return round(score, 1)

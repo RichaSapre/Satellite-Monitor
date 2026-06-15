@@ -2,6 +2,7 @@ import sys
 import base64
 import subprocess
 from pathlib import Path
+import pandas as pd
 
 import streamlit as st
 import plotly.express as px
@@ -385,16 +386,25 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-daily = (
-    df.groupby("date")
-    .agg(
-        observations=("id", "count"),
-        success_rate=("is_success", "mean"),
+if df.empty:
+    daily = pd.DataFrame(
+        columns=[
+            "date",
+            "observations",
+            "success_rate",
+        ]
     )
-    .reset_index()
-)
+else:
+    daily = (
+        df.groupby("date")
+        .agg(
+            observations=("id", "count"),
+            success_rate=("is_success", "mean"),
+        )
+        .reset_index()
+    )
 
-daily["success_rate"] = daily["success_rate"] * 100
+    daily["success_rate"] = daily["success_rate"] * 100
 
 fig_daily = px.line(
     daily,
@@ -402,13 +412,6 @@ fig_daily = px.line(
     y="observations",
     title="Number of Satellite Observations Over Time",
     markers=True,
-)
-
-fig_daily.update_layout(
-    template="plotly_dark",
-    paper_bgcolor="rgba(0,0,0,0)",
-    plot_bgcolor="rgba(0,0,0,0)",
-    font=dict(color="#dbeafe"),
 )
 
 st.plotly_chart(fig_daily, use_container_width=True)
