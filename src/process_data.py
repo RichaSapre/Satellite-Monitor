@@ -156,14 +156,30 @@ def add_health_score(satellite_df):
         return df
 
     def calculate_score(row):
-        score = row["success_rate"]
+        success_rate = row["success_rate"]
+        observations = row["observations"]
+        avg_duration = row["avg_duration"]
 
-        if row["observations"] < 5:
-            score -= 20
+        # Start with success rate as the main score.
+        score = success_rate
 
-        if row["avg_duration"] < 2:
-            score -= 10
+        # Add a small confidence bonus for more observations.
+        if observations >= 10:
+            score += 10
+        elif observations >= 5:
+            score += 5
 
+        # Add a small bonus for longer observation duration.
+        if avg_duration >= 5:
+            score += 5
+        elif avg_duration >= 2:
+            score += 2
+
+        # Give low-data satellites a floor so the chart is still readable.
+        if observations < 3 and score == 0:
+            score = 15
+
+        # Keep score between 0 and 100.
         score = max(0, min(100, score))
 
         return round(score, 1)
@@ -171,3 +187,4 @@ def add_health_score(satellite_df):
     df["health_score"] = df.apply(calculate_score, axis=1)
 
     return df
+

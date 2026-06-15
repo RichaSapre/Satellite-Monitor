@@ -448,6 +448,7 @@ fig_sat.update_layout(
     paper_bgcolor="rgba(0,0,0,0)",
     plot_bgcolor="rgba(0,0,0,0)",
     font=dict(color="#dbeafe"),
+    yaxis=dict(range=[0, 100])
 )
 
 st.plotly_chart(fig_sat, use_container_width=True)
@@ -479,6 +480,11 @@ fig_health = px.bar(
     y="health_score",
     hover_data=["observations", "success_rate", "avg_duration"],
     title="Satellite Health Score Based on Observation Reliability",
+    text="health_score",
+)
+
+fig_health.update_traces(
+    textposition="outside"
 )
 
 fig_health.update_layout(
@@ -486,6 +492,7 @@ fig_health.update_layout(
     paper_bgcolor="rgba(0,0,0,0)",
     plot_bgcolor="rgba(0,0,0,0)",
     font=dict(color="#dbeafe"),
+    yaxis=dict(range=[0, 100])
 )
 
 st.plotly_chart(fig_health, use_container_width=True)
@@ -521,6 +528,7 @@ fig_station.update_layout(
     paper_bgcolor="rgba(0,0,0,0)",
     plot_bgcolor="rgba(0,0,0,0)",
     font=dict(color="#dbeafe"),
+    yaxis=dict(range=[0, 100])
 )
 
 st.plotly_chart(fig_station, use_container_width=True)
