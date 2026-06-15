@@ -9,27 +9,33 @@ DATA_DIR.mkdir(exist_ok=True)
 OBSERVATIONS_URL = "https://network.satnogs.org/api/observations/"
 
 
-def fetch_observations(limit=500):
-    """
-    Fetch SatNOGS observations.
-
-    We do not request only 'good' observations because the dashboard needs
-    a mix of statuses to show success rates and anomaly patterns.
-    """
+def fetch_by_status(status, limit=200):
     params = {
         "format": "json",
+        "status": status,
     }
 
     response = requests.get(OBSERVATIONS_URL, params=params, timeout=30)
     response.raise_for_status()
 
     data = response.json()
-
     return data[:limit]
 
 
+def fetch_observations():
+    observations = []
+
+    for status in ["good", "bad", "unknown"]:
+        try:
+            observations.extend(fetch_by_status(status, limit=200))
+        except requests.RequestException as error:
+            print(f"Could not fetch status={status}: {error}")
+
+    return observations
+
+
 def save_observations():
-    observations = fetch_observations(limit=500)
+    observations = fetch_observations()
 
     rows = []
 
@@ -50,15 +56,20 @@ def save_observations():
 
     df = pd.DataFrame(rows)
 
-    if "status" in df.columns:
+    if df.empty:
+        print("No observations fetched.")
+    else:
         df = df[df["status"].astype(str).str.lower() != "future"].copy()
+        df = df.drop_duplicates(subset=["id"])
 
     output_path = DATA_DIR / "observations.csv"
     df.to_csv(output_path, index=False)
 
     print(f"Saved {len(df)} observations to {output_path}")
-    print(df.head())
-    print(df.columns)
+
+    if not df.empty:
+        print(df["status"].value_counts(dropna=False))
+        print(df.head())
 
 
 if __name__ == "__main__":
