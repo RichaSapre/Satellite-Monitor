@@ -55,4 +55,3 @@ def save_observations():
 
 if __name__ == "__main__":
     save_observations()
-    

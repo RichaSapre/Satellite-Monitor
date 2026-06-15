@@ -79,7 +79,12 @@ st.markdown(
     }}
 
     .hero-card {{
-        background: linear-gradient(135deg, rgba(17, 24, 39, 0.92) 0%, rgba(30, 58, 138, 0.88) 55%, rgba(15, 23, 42, 0.92) 100%);
+        background: linear-gradient(
+        135deg,
+        rgba(17, 24, 39, 0.92) 0%,
+        rgba(30, 58, 138, 0.88) 55%,
+        rgba(15, 23, 42, 0.92) 100%
+      );
         padding: 28px;
         border-radius: 22px;
         border: 1px solid rgba(147, 197, 253, 0.25);
