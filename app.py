@@ -1,3 +1,4 @@
+import sys
 import base64
 import subprocess
 from pathlib import Path
@@ -20,7 +21,7 @@ from src.anomaly import (
 
 
 st.set_page_config(
-    page_title="SignalWatch",
+    page_title="Satellite Monitor",
     page_icon="🛰️",
     layout="wide",
 )
@@ -199,10 +200,10 @@ st.markdown(
 st.markdown(
     """
     <div class="hero-card">
-        <div class="hero-title">🛰️ SignalWatch</div>
+        <div class="hero-title">🛰️ Satellite Monitor</div>
         <div class="hero-subtitle">
             Satellite observation reliability and anomaly monitoring dashboard.
-            SignalWatch analyzes open SatNOGS ground-station data to track communication
+            Satellite Monitor analyzes open SatNOGS ground-station data to track communication
             reliability, ground-station performance, and unusual observation patterns.
         </div>
         <br>
@@ -217,7 +218,7 @@ st.markdown(
 )
 
 
-st.sidebar.title("🛰️ SignalWatch Controls")
+st.sidebar.title("🛰️ Satellite Monitor Controls")
 
 st.sidebar.markdown(
     """
@@ -239,7 +240,7 @@ st.sidebar.markdown("---")
 if st.sidebar.button("Refresh SatNOGS Data"):
     with st.spinner("Fetching latest observations from SatNOGS..."):
         result = subprocess.run(
-            ["python", "src/fetch_data.py"],
+            [sys.executable, "src/fetch_data.py"],
             capture_output=True,
             text=True,
         )
@@ -504,7 +505,7 @@ st.markdown(
         communication behavior.
         </p>
         <p>
-        SignalWatch demonstrates how Python, open satellite data, data analysis, and anomaly detection
+        Satellite Monitor demonstrates how Python, open satellite data, data analysis, and anomaly detection
         can support satellite operations workflows by turning raw observation records into reliability
         insights.
         </p>
