@@ -122,3 +122,4 @@ def add_health_score(satellite_df):
     df["health_score"] = df.apply(calculate_score, axis=1)
 
     return df
+    

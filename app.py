@@ -248,7 +248,7 @@ if st.sidebar.button("Refresh SatNOGS Data"):
 st.sidebar.markdown("---")
 st.sidebar.markdown(
     """
-    **Data Source:**  
+    **Data Source:**
     SatNOGS open ground-station observations
     """
 )
