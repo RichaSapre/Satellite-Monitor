@@ -25,7 +25,7 @@ jobs:
       - name: Run Python syntax check
         run: |
           echo "Running syntax check..."
-          find . -name \"*.py\" -print0 | xargs -0 -n1 python -m py_compile
+          find . -name "*.py" -exec python -m py_compile {} +
 
       - name: Lint with flake8
         run: |
