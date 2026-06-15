@@ -11,17 +11,20 @@ OBSERVATIONS_URL = "https://network.satnogs.org/api/observations/"
 
 def fetch_observations(limit=500):
     """
-    Fetch completed SatNOGS observations instead of future scheduled ones.
+    Fetch SatNOGS observations.
+
+    We do not request only 'good' observations because the dashboard needs
+    a mix of statuses to show success rates and anomaly patterns.
     """
     params = {
         "format": "json",
-        "status": "good",
     }
 
     response = requests.get(OBSERVATIONS_URL, params=params, timeout=30)
     response.raise_for_status()
 
     data = response.json()
+
     return data[:limit]
 
 
@@ -31,19 +34,24 @@ def save_observations():
     rows = []
 
     for obs in observations:
-        rows.append({
-            "id": obs.get("id"),
-            "satellite": obs.get("norad_cat_id") or obs.get("satellite"),
-            "station": obs.get("station") or obs.get("ground_station"),
-            "start": obs.get("start"),
-            "end": obs.get("end"),
-            "status": obs.get("status", "unknown"),
-            "transmitter": obs.get("transmitter"),
-            "archive": obs.get("archive"),
-            "waterfall": obs.get("waterfall"),
-        })
+        rows.append(
+            {
+                "id": obs.get("id"),
+                "satellite": obs.get("norad_cat_id") or obs.get("satellite"),
+                "station": obs.get("station") or obs.get("ground_station"),
+                "start": obs.get("start"),
+                "end": obs.get("end"),
+                "status": obs.get("status", "unknown"),
+                "transmitter": obs.get("transmitter"),
+                "archive": obs.get("archive"),
+                "waterfall": obs.get("waterfall"),
+            }
+        )
 
     df = pd.DataFrame(rows)
+
+    if "status" in df.columns:
+        df = df[df["status"].astype(str).str.lower() != "future"].copy()
 
     output_path = DATA_DIR / "observations.csv"
     df.to_csv(output_path, index=False)

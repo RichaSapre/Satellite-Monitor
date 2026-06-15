@@ -81,11 +81,11 @@ st.markdown(
 
     .hero-card {{
         background: linear-gradient(
-        135deg,
-        rgba(17, 24, 39, 0.92) 0%,
-        rgba(30, 58, 138, 0.88) 55%,
-        rgba(15, 23, 42, 0.92) 100%
-      );
+            135deg,
+            rgba(17, 24, 39, 0.92) 0%,
+            rgba(30, 58, 138, 0.88) 55%,
+            rgba(15, 23, 42, 0.92) 100%
+        );
         padding: 28px;
         border-radius: 22px;
         border: 1px solid rgba(147, 197, 253, 0.25);
@@ -202,9 +202,9 @@ st.markdown(
     <div class="hero-card">
         <div class="hero-title">🛰️ Satellite Monitor</div>
         <div class="hero-subtitle">
-            Satellite observation reliability and anomaly monitoring dashboard.
-            Satellite Monitor analyzes open SatNOGS ground-station data to track communication
-            reliability, ground-station performance, and unusual observation patterns.
+            A satellite operations-style dashboard that turns open ground-station
+            observation records into reliability insights, health scores, and
+            anomaly alerts.
         </div>
         <br>
         <span class="badge-good">Open Satellite Data</span>
@@ -212,6 +212,31 @@ st.markdown(
         <span class="badge-warning">Reliability Monitoring</span>
         &nbsp;
         <span class="badge-good">Python + Streamlit</span>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+
+st.markdown(
+    """
+    <div class="section-card">
+        <h3>What does this dashboard do?</h3>
+        <p>
+        Satellite Monitor uses open SatNOGS ground-station observation data.
+        Each observation represents a ground station attempting to receive or
+        track a satellite signal during a scheduled satellite pass.
+        </p>
+        <p>
+        The dashboard turns those raw observation records into simple reliability
+        metrics: how many observations happened, how successful they were, which
+        satellites appear consistently observed, which ground stations perform
+        better, and whether any unusual patterns should be reviewed.
+        </p>
+        <p>
+        This is inspired by satellite operations workflows, where software helps
+        teams monitor communication health, reliability, and service continuity.
+        </p>
     </div>
     """,
     unsafe_allow_html=True,
@@ -254,7 +279,7 @@ if st.sidebar.button("Refresh SatNOGS Data"):
 st.sidebar.markdown("---")
 st.sidebar.markdown(
     """
-    **Data Source:**
+    **Data Source:**  
     SatNOGS open ground-station observations
     """
 )
@@ -284,6 +309,19 @@ rule_anomalies = rule_based_anomalies(satellite_df)
 
 
 st.markdown("## Mission Overview")
+
+st.markdown(
+    """
+    <div class="section-card">
+        <p class="small-note">
+        This section gives a quick summary of the current dataset. It shows how
+        many satellite observations were analyzed, the overall success rate, and
+        how many unique satellites and ground stations appear in the data.
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 col1, col2, col3, col4 = st.columns(4)
 
@@ -334,6 +372,19 @@ with col4:
 
 st.markdown("## Daily Observation Activity")
 
+st.markdown(
+    """
+    <div class="section-card">
+        <p class="small-note">
+        This chart shows how many satellite observations are present for each date
+        in the dataset. If the line looks flat, it usually means the current data
+        covers a small time window or contains a limited number of records.
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
 daily = (
     df.groupby("date")
     .agg(
@@ -349,7 +400,7 @@ fig_daily = px.line(
     daily,
     x="date",
     y="observations",
-    title="Observations Over Time",
+    title="Number of Satellite Observations Over Time",
     markers=True,
 )
 
@@ -365,6 +416,20 @@ st.plotly_chart(fig_daily, use_container_width=True)
 
 st.markdown("## Satellite Reliability")
 
+st.markdown(
+    """
+    <div class="section-card">
+        <p class="small-note">
+        This section groups observations by satellite ID. It calculates how often
+        observations for each satellite were successful in the current dataset.
+        A higher success rate means that satellite was more consistently observed
+        by ground stations in the available records.
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
 top_satellites = satellite_df.head(20)
 
 fig_sat = px.bar(
@@ -372,7 +437,7 @@ fig_sat = px.bar(
     x="satellite",
     y="success_rate",
     hover_data=["observations", "avg_duration", "health_score"],
-    title="Top Satellites by Observation Count: Success Rate",
+    title="Satellite Observation Success Rate",
 )
 
 fig_sat.update_layout(
@@ -394,8 +459,9 @@ st.markdown(
     <div class="section-card">
         <p class="small-note">
         The health score combines observation success rate, number of observations,
-        and average observation duration. It is not a real satellite health diagnosis;
-        it is a software-generated reliability indicator based on open observation data.
+        and average observation duration. It is not a real satellite health diagnosis.
+        It is a software-generated reliability indicator based only on open
+        observation data.
         </p>
     </div>
     """,
@@ -409,7 +475,7 @@ fig_health = px.bar(
     x="satellite",
     y="health_score",
     hover_data=["observations", "success_rate", "avg_duration"],
-    title="Top Satellites by Health Score",
+    title="Satellite Health Score Based on Observation Reliability",
 )
 
 fig_health.update_layout(
@@ -424,6 +490,19 @@ st.plotly_chart(fig_health, use_container_width=True)
 
 st.markdown("## Ground Station Reliability")
 
+st.markdown(
+    """
+    <div class="section-card">
+        <p class="small-note">
+        Ground stations are the Earth-based systems that receive or track satellite
+        signals. This section compares ground stations based on observation count,
+        success rate, and average observation duration.
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
 top_stations = station_df.head(20)
 
 fig_station = px.bar(
@@ -431,7 +510,7 @@ fig_station = px.bar(
     x="station",
     y="success_rate",
     hover_data=["observations", "avg_duration"],
-    title="Top Ground Stations by Observation Count: Success Rate",
+    title="Ground Station Observation Success Rate",
 )
 
 fig_station.update_layout(
@@ -447,6 +526,20 @@ st.dataframe(top_stations, use_container_width=True)
 
 
 st.markdown("## Anomaly Alerts")
+
+st.markdown(
+    """
+    <div class="section-card">
+        <p class="small-note">
+        Anomalies here are not confirmed satellite failures. They are unusual
+        patterns in the available observation data, such as low success rates or
+        behavior that looks different from other records. The goal is to show how
+        software can flag patterns for review.
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 if rule_anomalies.empty:
     st.markdown(
@@ -466,6 +559,20 @@ else:
 
 
 st.markdown("## Machine Learning Anomaly View")
+
+st.markdown(
+    """
+    <div class="section-card">
+        <p class="small-note">
+        This section uses Isolation Forest to flag satellite records that look
+        unusual based on observation count, success rate, and average duration.
+        It is included as a learning feature to show how anomaly detection could
+        support monitoring workflows.
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 if "is_ml_anomaly" not in satellite_with_ml.columns:
     st.info("ML anomaly column was not created. Check src/anomaly.py.")
@@ -491,6 +598,18 @@ else:
 
 if show_raw_data:
     st.markdown("## Raw Observation Data")
+    st.markdown(
+        """
+        <div class="section-card">
+            <p class="small-note">
+            This table shows the cleaned observation data used by the dashboard.
+            It is useful for checking which satellite IDs, station IDs, timestamps,
+            and statuses were included in the analysis.
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
     st.dataframe(df, use_container_width=True)
 
 
@@ -500,14 +619,19 @@ st.markdown(
     """
     <div class="section-card">
         <p>
-        Satellite connectivity depends on more than satellites in orbit. It also depends on
-        reliable ground operations, consistent observation quality, and fast detection of unusual
-        communication behavior.
+        Satellite connectivity depends on more than satellites in orbit. It also
+        depends on reliable ground operations, consistent observation quality, and
+        fast detection of unusual communication behavior.
         </p>
         <p>
-        Satellite Monitor demonstrates how Python, open satellite data, data analysis, and anomaly detection
-        can support satellite operations workflows by turning raw observation records into reliability
-        insights.
+        Satellite Monitor demonstrates how Python, open satellite data, data
+        analysis, and anomaly detection can support satellite operations workflows
+        by turning raw observation records into reliability insights.
+        </p>
+        <p>
+        This connects to real satellite connectivity work because reliable service
+        requires monitoring, collaboration between distributed ground systems, and
+        tools that help teams notice problems early.
         </p>
     </div>
     """,
